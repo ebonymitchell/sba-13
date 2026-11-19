@@ -130,4 +130,19 @@ router.delete("/:id", async (req, res) => {
 });
 
 
+// GET /api/products - Retrieve all products
+router.get("/", async (req, res) => {
+    try {
+        const products = await Product.find();
+
+        return res.status(200).json(products);
+    } catch (error) {
+        console.error("Failed to retrieve products:", error.message);
+
+        return res.status(500).json({
+            message: "Failed to retrieve products.",
+        });
+    }
+});
+
 export default router;
