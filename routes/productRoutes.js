@@ -96,4 +96,38 @@ router.put("/:id", async (req, res) => {
 });
 
 
+// DELETE /api/products/:id - Delete a product by ID
+router.delete("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate the MongoDB ObjectId
+        if (!mongoose.isObjectIdOrHexString(id)) {
+            return res.status(400).json({
+                message: "Invalid product ID.",
+            });
+        }
+
+        // Find and delete the product
+        const product = await Product.findByIdAndDelete(id);
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found.",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Product deleted successfully.",
+        });
+    } catch (error) {
+        console.error("Failed to delete product:", error.message);
+
+        return res.status(500).json({
+            message: "Failed to delete product.",
+        });
+    }
+});
+
+
 export default router;
