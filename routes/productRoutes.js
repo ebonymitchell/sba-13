@@ -54,7 +54,6 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-
 // PUT /api/products/:id - Update a product by ID
 router.put("/:id", async (req, res) => {
     try {
@@ -95,7 +94,6 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-
 // DELETE /api/products/:id - Delete a product by ID
 router.delete("/:id", async (req, res) => {
     try {
@@ -129,11 +127,19 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-
-// GET /api/products - Retrieve all products
+// GET /api/products - Retrieve products with optional category filtering
 router.get("/", async (req, res) => {
     try {
-        const products = await Product.find();
+        const { category } = req.query;
+
+        // Build the filter based on query parameters
+        const filter = {};
+
+        if (category) {
+            filter.category = category;
+        }
+
+        const products = await Product.find(filter);
 
         return res.status(200).json(products);
     } catch (error) {
