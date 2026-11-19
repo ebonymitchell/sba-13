@@ -1,12 +1,16 @@
 import "dotenv/config";
 import express from "express";
 import connectDB from "./db/connection.js";
+import productRoutes from "./routes/productRoutes.js";
 
 // Create the Express application
 const app = express();
 
 // Enable JSON request bodies
 app.use(express.json());
+
+// Register product routes
+app.use("/api/products", productRoutes);
 
 // Define the server port
 const PORT = process.env.PORT || 3000;
