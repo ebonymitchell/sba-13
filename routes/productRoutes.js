@@ -54,4 +54,46 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+
+// PUT /api/products/:id - Update a product by ID
+router.put("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate the MongoDB ObjectId
+        if (!mongoose.isObjectIdOrHexString(id)) {
+            return res.status(400).json({
+                message: "Invalid product ID.",
+            });
+        }
+
+        // Update the product and return the updated document
+        const product = await Product.findByIdAndUpdate(id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found.",
+            });
+        }
+
+        return res.status(200).json(product);
+    } catch (error) {
+        if (error.name === "ValidationError" || error.name === "CastError") {
+            return res.status(400).json({
+                message: error.message,
+            });
+        }
+
+        console.error("Failed to update product:", error.message);
+
+        return res.status(500).json({
+            message: "Failed to update product.",
+        });
+    }
+});
+
+
 export default router;
