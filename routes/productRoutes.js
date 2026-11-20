@@ -127,10 +127,17 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-// GET /api/products - Retrieve products with filtering and sorting
+// GET /api/products - Retrieve products with filtering, sorting, and pagination
 router.get("/", async (req, res) => {
     try {
-        const { category, minPrice, maxPrice, sortBy } = req.query;
+        const {
+            category,
+            minPrice,
+            maxPrice,
+            sortBy,
+            page = "1",
+            limit = "10",
+        } = req.query;
 
         // Build the filter based on query parameters
         const filter = {};
@@ -181,7 +188,30 @@ router.get("/", async (req, res) => {
             });
         }
 
-        const products = await Product.find(filter).sort(sort);
+        // Validate pagination parameters
+        const pageNumber = Number(page);
+        const limitNumber = Number(limit);
+
+        if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) {
+            return res.status(400).json({
+                message: "page must be a positive integer.",
+            });
+        }
+
+        if (!Number.isSafeInteger(limitNumber) || limitNumber < 1) {
+            return res.status(400).json({
+                message: "limit must be a positive integer.",
+            });
+        }
+
+        // Calculate how many products to skip
+        const skip = (pageNumber - 1) * limitNumber;
+
+        // Retrieve the requested page of products
+        const products = await Product.find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(limitNumber);
 
         return res.status(200).json(products);
     } catch (error) {
