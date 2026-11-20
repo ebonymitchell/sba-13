@@ -127,16 +127,45 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-// GET /api/products - Retrieve products with optional category filtering
+// GET /api/products - Retrieve products with optional filtering
 router.get("/", async (req, res) => {
     try {
-        const { category } = req.query;
+        const { category, minPrice, maxPrice } = req.query;
 
         // Build the filter based on query parameters
         const filter = {};
 
         if (category) {
             filter.category = category;
+        }
+
+        // Filter products by minimum and maximum price
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            filter.price = {};
+
+            if (minPrice !== undefined) {
+                const minimum = Number(minPrice);
+
+                if (!Number.isFinite(minimum) || minimum < 0) {
+                    return res.status(400).json({
+                        message: "minPrice must be a valid non-negative number.",
+                    });
+                }
+
+                filter.price.$gte = minimum;
+            }
+
+            if (maxPrice !== undefined) {
+                const maximum = Number(maxPrice);
+
+                if (!Number.isFinite(maximum) || maximum < 0) {
+                    return res.status(400).json({
+                        message: "maxPrice must be a valid non-negative number.",
+                    });
+                }
+
+                filter.price.$lte = maximum;
+            }
         }
 
         const products = await Product.find(filter);
