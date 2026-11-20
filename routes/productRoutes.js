@@ -127,10 +127,10 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-// GET /api/products - Retrieve products with optional filtering
+// GET /api/products - Retrieve products with filtering and sorting
 router.get("/", async (req, res) => {
     try {
-        const { category, minPrice, maxPrice } = req.query;
+        const { category, minPrice, maxPrice, sortBy } = req.query;
 
         // Build the filter based on query parameters
         const filter = {};
@@ -168,7 +168,20 @@ router.get("/", async (req, res) => {
             }
         }
 
-        const products = await Product.find(filter);
+        // Set the sorting order
+        const sort = {};
+
+        if (sortBy === "price_asc") {
+            sort.price = 1;
+        } else if (sortBy === "price_desc") {
+            sort.price = -1;
+        } else if (sortBy !== undefined) {
+            return res.status(400).json({
+                message: "sortBy must be price_asc or price_desc.",
+            });
+        }
+
+        const products = await Product.find(filter).sort(sort);
 
         return res.status(200).json(products);
     } catch (error) {
